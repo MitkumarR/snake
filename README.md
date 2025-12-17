@@ -1,2 +1,1 @@
-raylib=5.5
-c++17
+raylib5.5 & c++17

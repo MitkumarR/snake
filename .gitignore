@@ -1,0 +1,20 @@
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# Executables
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build directories
+bin/
+obj/
+dist/
+build/

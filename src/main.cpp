@@ -3,15 +3,21 @@
 #include <deque>
 
 
-const Color Green = { 173, 204, 96, 255 };
-const Color DarkGreen = { 43, 51, 24,  255 };
+const Color Gray = { 100, 100, 100,  255 };
+const Color DarkGray = { 56, 56, 56, 255 };
+const Color LightGray = { 176, 176, 176, 255 };
 
-const int ScreenWidth = 400;
-const int ScreenHeight = 400;
+const Color Red = { 255, 94, 94, 255 };
+
 const int CellSize = 16;
+const int CellCountX = 25;
+const int CellCountY = 25;
 
-int CellCountX = ScreenWidth / CellSize;
-int CellCountY = ScreenHeight / CellSize;
+int OffsetX = 60;
+int OffsetY = 60;
+
+const int ScreenWidth = 2*OffsetX + CellCountX * CellSize;
+const int ScreenHeight = 2*OffsetY + CellCountY * CellSize;
 
 double LastUpdateTime = 0.0;
 bool EventTriggered(double Interval) {
@@ -69,26 +75,27 @@ public:
     // Draw the food
     void Draw() override {
         float Radius = CellSize / 2;
-        float CenterX = Position.x * CellSize + Radius;
-        float CenterY = Position.y * CellSize + Radius;
+        float CenterX = Position.x * CellSize + Radius + OffsetX;
+        float CenterY = Position.y * CellSize + Radius + OffsetY;
 
-        DrawCircle(CenterX, CenterY, Radius, DarkGreen);
+        DrawCircle(CenterX, CenterY, Radius, Red);
     }
 };
 
 class Snake : public Entity {
 
-    std::deque<Vector2> Body = {Vector2{6, 6}, Vector2{5, 6}, Vector2{4, 6}}; // Initial snake body segments
+    std::deque<Vector2> Body = {Vector2{12, 12}}; // Initial snake body segments
 public:
     Vector2 Direction = {1, 0}; // Initial movement direction to the right
     bool Growing = false;
 
     // Draw the snake
     void Draw() override{
-        for (const auto& segment : Body)
+        for (size_t i = 0; i < Body.size(); ++i)
         {
-            Rectangle BodyCell = Rectangle{segment.x * CellSize, segment.y * CellSize, (float)CellSize, (float)CellSize};
-            DrawRectangleRounded(BodyCell, 0.5f, 6, DarkGreen);
+            Rectangle BodyCell = Rectangle{OffsetX + Body[i].x * CellSize, OffsetY + Body[i].y * CellSize, (float)CellSize, (float)CellSize};
+            Color SegmentColor = (i == 0) ? DarkGray : Gray;    
+            DrawRectangleRounded(BodyCell, 0.5f, 6, SegmentColor);
         }
     }
 
@@ -123,6 +130,7 @@ public:
     std::deque<Vector2> PlayerBody = Player.GetBody();
     Food Berry = Food(PlayerBody);
     bool Running = false;
+    int score = 0;
 
     void Update() {
 
@@ -151,6 +159,7 @@ public:
         if (Player.GetPosition().x == Berry.GetPosition().x && Player.GetPosition().y == Berry.GetPosition().y ) {
             Berry.Respawn(PlayerBody); // Respawn food at a new position
             Player.Growing = true; // Set the snake to grow on the next move
+            score ++;
         }
     }
 
@@ -184,7 +193,6 @@ int main() {
     while (!WindowShouldClose()) {
         BeginDrawing();
         
-        
         if(EventTriggered(0.1))
             SnakeGame.Update(); // Update game state at fixed intervals
 
@@ -201,7 +209,11 @@ int main() {
         if(IsKeyPressed(KEY_ENTER) && !SnakeGame.Running)
             SnakeGame.Running = true;
 
-        ClearBackground(Green); // Clear the screen with green color
+        ClearBackground(WHITE); // Clear the screen with green color
+        DrawRectangleLinesEx(Rectangle{(float)OffsetX - 5, (float)OffsetY - 5, (float)(CellCountX * CellSize+10), (float)(CellCountY * CellSize+10)}, 5, LightGray); // Draw the game area background
+        DrawText("Snake Game", OffsetX, OffsetY-30, 20, DarkGray);
+        DrawText(TextFormat("Score: %d", SnakeGame.score), ScreenWidth - OffsetX - 80, OffsetY - 30, 20, DarkGray);
+
         SnakeGame.Draw(); // Draw the game entities
 
         EndDrawing();

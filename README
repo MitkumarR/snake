@@ -1,28 +1,23 @@
 Snake game
+==========
 
 Snake game is classic retro game. In this game, snake eats berries and grows. 
 
-Made with C++ and [Raylib](https://www.raylib.com/) library
+Made with C++ and Raylib library
 
-"\
-C++ version 17\
+C++ version 17
 raylib v5.5
 
-----
-\
 Quick start
+===========
 
-Download the releas packages of raylib from [https://github.com/raysan5/raylib/releases](https://github.com/raysan5/raylib/releases)
+Download the releas packages of raylib from https://github.com/raysan5/raylib/releases
 
 Setup raylib `inlude` and `lib` paths with your mingw (or any c/c++ compiler).
 
-```bash
 git clone https://github.com/MitkumarR/snake.git 
-```
 
-```bash
 g++ .\src\main.cpp -lraylib -lopengl32 -lgdi32 -lwinmm -o snake
-```
 
-Enjoy snake game.
+Enjoy snake game !!!
 

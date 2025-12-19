@@ -6,6 +6,7 @@
 const Color Gray = { 100, 100, 100,  255 };
 const Color DarkGray = { 56, 56, 56, 255 };
 const Color LightGray = { 176, 176, 176, 255 };
+const Color TransGray = { 128, 128, 128, 100 };
 
 const Color Red = { 255, 94, 94, 255 };
 
@@ -117,7 +118,7 @@ public:
     }
 
     void Reset() {
-        Body = {Vector2{6, 6}, Vector2{5, 6}, Vector2{4, 6}};
+        Body = {Vector2{12, 12}};
         Direction = Vector2{1, 0};
         Growing = false;
     }
@@ -129,6 +130,8 @@ public:
     Snake Player = Snake();
     std::deque<Vector2> PlayerBody = Player.GetBody();
     Food Berry = Food(PlayerBody);
+    bool IsOver = false;
+    bool IsStarted = false;
     bool Running = false;
     int score = 0;
 
@@ -138,8 +141,8 @@ public:
 
         Player.Move(); // Update snake position
         CheckEatFood(); 
-        CheckCollisions();
-        CheckSelfCollision();
+        if(CheckCollisions()) GameOver();
+
     }
     
     void Draw() {
@@ -149,9 +152,18 @@ public:
 
     void GameOver() {
         // Reset the game state
+        Running = false;
+        IsOver = true;
+        score = 0;
+    }
+
+    void Restart() {
         Player.Reset();
         Berry.Respawn(PlayerBody);
+        IsOver = false;
+        IsStarted = false;
         Running = false;
+        score = 0;
     }
 
     void CheckEatFood() {
@@ -163,22 +175,23 @@ public:
         }
     }
 
-    void CheckSelfCollision() {
+    bool CheckSelfCollision() {
         Vector2 Head = Player.GetPosition();
         std::deque<Vector2> Body = Player.GetBody();
 
         for (size_t i = 1; i < Body.size(); ++i) {
             if (Head.x == Body[i].x && Head.y == Body[i].y) {
-                GameOver();
-                break;
+                return true;
             }
         }
+
+        return false;
     }
 
-    void CheckCollisions() {
-        if (Player.GetPosition().x < 0 || Player.GetPosition().x >= CellCountX || Player.GetPosition().y < 0 || Player.GetPosition().y >= CellCountY) {
-            GameOver();
-        }
+    bool CheckCollisions() {
+        if (Player.GetPosition().x < 0 || Player.GetPosition().x >= CellCountX || Player.GetPosition().y < 0 || Player.GetPosition().y >= CellCountY || CheckSelfCollision()) return true;
+
+        return false;
     }
 };
 
@@ -193,7 +206,7 @@ int main() {
     while (!WindowShouldClose()) {
         BeginDrawing();
         
-        if(EventTriggered(0.1))
+        if(EventTriggered(0.1) && !SnakeGame.IsOver)
             SnakeGame.Update(); // Update game state at fixed intervals
 
         // Handle input for snake direction
@@ -209,11 +222,26 @@ int main() {
         if(IsKeyPressed(KEY_ENTER) && !SnakeGame.Running)
             SnakeGame.Running = true;
 
+        if(IsKeyPressed(KEY_ENTER) && SnakeGame.IsOver)
+            SnakeGame.Restart();
+            
         ClearBackground(WHITE); // Clear the screen with green color
         DrawRectangleLinesEx(Rectangle{(float)OffsetX - 5, (float)OffsetY - 5, (float)(CellCountX * CellSize+10), (float)(CellCountY * CellSize+10)}, 5, LightGray); // Draw the game area background
         DrawText("Snake Game", OffsetX, OffsetY-30, 20, DarkGray);
         DrawText(TextFormat("Score: %d", SnakeGame.score), ScreenWidth - OffsetX - 80, OffsetY - 30, 20, DarkGray);
+        
+        if(!SnakeGame.IsStarted && !SnakeGame.Running && !SnakeGame.IsOver) {
+            DrawText("Press enter to start", OffsetX+100, OffsetY+130, 20, DarkGray);
+            DrawRectangle((float)OffsetX - 5, (float)OffsetY - 5, (float)(CellCountX * CellSize+10), (float)(CellCountY * CellSize+10), TransGray); 
+        
+        }
 
+        if(SnakeGame.IsOver && !SnakeGame.Running) {
+            DrawText("Game Over!", OffsetX+150, OffsetY+130, 20, DarkGray);
+            DrawText("Press enter to restart", OffsetX+90, OffsetY+150, 20, DarkGray);
+            DrawRectangle((float)OffsetX - 5, (float)OffsetY - 5, (float)(CellCountX * CellSize+10), (float)(CellCountY * CellSize+10), TransGray); 
+        
+        }
         SnakeGame.Draw(); // Draw the game entities
 
         EndDrawing();
